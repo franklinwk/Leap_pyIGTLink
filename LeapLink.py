@@ -24,10 +24,10 @@ else:
 
 # Import Leap Library
 from lib_win import Leap
-    
-    
+   
 IGTL_HEADER_VERSION = 1
 IGTL_IMAGE_HEADER_VERSION = 1
+FRAME_RATE = 30
 
 class PyIGTLink(SocketServer.TCPServer):
     """ For streaming data over TCP with GE-protocol"""
@@ -389,13 +389,13 @@ if __name__ == "__main__":
     server = PyIGTLink(localServer=True)
 
     LeapController = Leap.Controller()
+    LeapController.set_policy(Leap.Controller.POLICY_BACKGROUND_FRAMES)
     
     while True:
       frame = LeapController.frame()
       if server.is_connected():
-        #print(len(frame.hands))
+        #print(frame.id)
         if len(frame.hands) >= 1 :
-          #print("going")
           hand = frame.hands[0]
           for fingerIndex, finger in enumerate(hand.fingers) :
             if len(hand.fingers.extended()) >= 2:
@@ -403,5 +403,5 @@ if __name__ == "__main__":
               name = "Hand%iFinger%i" % (1,fingerIndex+1) # +1 because to have 1-based indexes for the hands and fingers
               transform_message = TransformMessage(_data, name)
               server.add_message_to_send_queue(transform_message)
-      time.sleep(0.04)
+      time.sleep(1/FRAME_RATE)
  
